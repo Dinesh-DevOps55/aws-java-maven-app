@@ -12,20 +12,10 @@ pipeline {
     tools {
         maven 'Maven'
     }
+    environment {
+        IMAGE_NAME = 'simon808/demo-app:java-maven-1.0'
+    }
     stages {
-        stage('increment version') {
-            steps {
-                script {
-                    echo 'incrementing app version...'
-                    sh 'mvn build-helper:parse-version versions:set \
-                        -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} \
-                        versions:commit'
-                    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
-                    def version = matcher[0][1]
-                    env.IMAGE_NAME = "simon808/demo-app:${version}-react-nodejs-example"
-                }
-            }
-        }
         stage('build app') {
             steps {
                 echo 'building application jar...'
@@ -46,29 +36,13 @@ pipeline {
             steps {
                 script {
                     echo 'deploying docker image to EC2...'
-
-                    def shellCmd = "bash ./server-cmds.sh ${IMAGE_NAME}"
-                    def ec2Instance = "ec2-user@3.84.224.206"
-
+                    def dockerCmd = "docker run -p 8080:8080 -d ${IMAGE_NAME}"
                     sshagent(['ec2-server-key']) {
-                        sh "scp server-cmds.sh ${ec2Instance}:/home/ec2-user"
-                        sh "scp docker-compose.yaml ${ec2Instance}:/home/ec2-user"
-                        sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} ${shellCmd}"
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@3.84.224.206 ${dockerCmd}"
                     }
                 }
             }               
         }
-        stage('commit version update'){
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'gitlab-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]){
-                        sh 'git remote set-url origin https://$USER:$PASS@gitlab.com/twn-devops-bootcamp-nowis/exercises/java-maven-app-mod-9.git'
-                        sh 'git add .'
-                        sh 'git commit -m "ci: version bump"'
-                        sh 'git push origin HEAD:jenkins-jobs'
-                    }
-                }
-            }
-        }
+        
     }
 }
