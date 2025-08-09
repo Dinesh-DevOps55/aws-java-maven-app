@@ -13,7 +13,7 @@ pipeline {
         maven 'Maven'
     }
     environment {
-        IMAGE_NAME = 'dineshdocker55/my-react-app:1.1'
+        IMAGE_NAME = 'dineshdocker55/java-maven:1.0'
     }
     stages {
         stage('build app') {
