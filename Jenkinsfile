@@ -13,7 +13,7 @@ pipeline {
          maven 'maven-3.9'
     }
     environment {
-        IMAGE_NAME = 'dineshdocker55/java-maven:1.0'
+        IMAGE_NAME = 'dineshdocker55/java-maven:2.0'
     }
     stages {
         stage('build app') {
