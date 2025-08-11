@@ -32,16 +32,16 @@ pipeline {
                 buildJar()
             }
         }
-        stage('build image') {
+stage('build image') {
             steps {
                 script {
-                    echo 'building the docker image...'
-                    buildImage(env.IMAGE_NAME)
+                    echo "building the docker image ${IMAGE_NAME}..."
+                    sh "docker build -t ${IMAGE_NAME} ."
                     dockerLogin()
                     dockerPush(env.IMAGE_NAME)
                 }
             }
-        } 
+        }
         stage("deploy") {
             steps {
                 script {
